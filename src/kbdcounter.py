@@ -23,7 +23,7 @@ class KbdCounter(object):
 
     def set_nextsave(self):
         now = time.time()
-        self.nextsave = now + min((self.nexthour - datetime.now()).seconds+1, 300)        
+        self.nextsave = now + min((self.nexthour - datetime.now()).seconds+1, 300)
 
     def read_existing(self):
 
@@ -36,6 +36,10 @@ class KbdCounter(object):
         
 
     def save(self):
+        self.set_nextsave()        
+        if self.thishour_count == 0:
+            return 
+        
         tmpout = csv.writer(open("%s.tmp" % self.storepath, 'w'))
         thishour_repr = self.thishour.strftime("%Y-%m-%dT%H")        
 
@@ -47,14 +51,13 @@ class KbdCounter(object):
         tmpout.writerow([thishour_repr, self.thishour_count])
         os.rename("%s.tmp" % self.storepath, self.storepath)
 
+
     def run(self):
         events = XEvents()
         events.start()
         while not events.listening():
+            # Wait for init
             time.sleep(1)
-            print "Waiting for initializationg"
-
-        print "Listening for events"
 
         try:
             while events.listening():
@@ -65,7 +68,7 @@ class KbdCounter(object):
                 
                 if evt.type != "EV_KEY" or evt.value != 1: # Only count key down, not up.
                     continue
-            
+
                 self.thishour_count+=1
             
                 if time.time() > self.nextsave:
