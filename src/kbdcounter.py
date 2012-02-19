@@ -3,14 +3,15 @@
 import os
 import time
 from datetime import datetime, timedelta
+from optparse import OptionParser
 import csv
 from xlib import XEvents
 
 
 
 class KbdCounter(object):
-    def __init__(self):
-        self.storepath=os.path.expanduser("~/.kbdcounter.csv")
+    def __init__(self, options):
+        self.storepath=os.path.expanduser(options.storepath)
 
         self.set_thishour()
         self.set_nextsave()
@@ -84,8 +85,15 @@ class KbdCounter(object):
             
                     
 
-if __name__ == "__main__":
-    kc = KbdCounter()
+def run():
+    oparser = OptionParser()
+    oparser.add_option("--storepath", dest="storepath",
+                       help="Filename into which number of keypresses per hour is written",
+                       default="~/.kbdcounter.csv")
+
+    (options, args) = oparser.parse_args()
+    
+    kc = KbdCounter(options)
     kc.run()
 
     
